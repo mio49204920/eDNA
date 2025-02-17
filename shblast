@@ -1,0 +1,43 @@
+TEMP_DIR=$(mktemp -d)
+RESULT_FILE="${TEMP_DIR}/reslt.txt"
+for FASTQ_FILE in "$@"; do
+ BASE_NAME=$(basename "$FASTQ_FILE" .fq)
+ FASTA_FILE="${TEMP_DIR}/${BASE_NAME}.fasta"
+ BLAST_OUTPUT="${TEMP_DIR}/${BASE_NAME}.blastn"
+ RMA_FILE="${TEMP_DIR}/${BASE_NAME}.rma"
+ INFO_FILE="${TEMP_DIR}/${BASE_NAME}.info"
+seqkit fq2fa $FASTQ_FILE -o $FASTA_FILE
+if [ $? -ne 0 ]; then
+ echo "Error converting FASTQ to FASTA"
+ exit 1
+fi
+blastn -num_threads 40 -db \
+'/home/omino.mio/2024seika/silva/silva-SSU-LSU_PR2_NCBI-16S-mito-plastid_2023-04-18_rename_mitofish-2023-11-07.fasta' \
+-query $FASTA_FILE -out $BLAST_OUTPUT
+if [ $? -ne 0 ]; then
+ echo "Error running BLAST"
+ exit 1
+fi
+'/suikou/tool9/megan_6.25.10/tools/blast2rma' -i $BLAST_OUTPUT -o $RMA_FILE --format BlastText
+if [ $? -ne 0 ]; then
+ echo "Error converting BLAST output to RMA"
+ exit 1
+fi
+/suikou/tool9/megan_6.25.10/tools/rma2info -i $RMA_FILE -o $INFO_FILE -c2c Taxonomy -p -r
+if [ $? -ne 0 ]; then
+ echo "Error extracting information from RMA file"
+ exit 1
+fi
+COUNT=$(grep '^S' $INFO_FILE | grep 'NCBI; cellular organisms; Eukaryota' | wc -l)
+if [ $? -ne 0 ]; then
+ echo "Error extracting information from INFO file"
+ exit 1
+fi
+echo "$COUNT $FASTQ_FILE" >> $RESULT_FILE
+done
+MAX_RESULT=$(sort -nr $RESULT_FILE | head -n 1)
+MAX_COUNT=$(echo $MAX_RESULT | awk '{print $1}')
+MAX_FILE=$(echo $MAX_RESLUT | awk '{print $2}')
+echo "File with the highest count: $MAX_FILE ($MAX_COUNT)"
+rm -rf $TEMP_DIR
+echo "Pipeline complete successfully"
