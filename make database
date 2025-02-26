@@ -1,0 +1,19 @@
+#For sequences where the 16S region is not specified, use BioPython to identify the 16S region, extract it, and create a FASTA file.
+#For sequences where the 16S region is not specified, use BioPython to identify the 16S region, extract it, and create a FASTA file#If the 16S region is specified, use the ID and start and end positions to extract only the specified portion of the nucleotide sequence and create a FASTA file.
+while read -r id start end; do samtools faidx input.fasta "${id}:${start}-${end}" >> output.file; done < IDS.txt
+
+#Use the created file as a query to perform a homology search against the nt database.
+blastn -db /ncbi/2024-10-17_nt/nt -query output.fasta -num_threads 40 -outfmt 6 -max_target_seqs 100000 > fasta.balstn
+
+#Extract only the accession IDs from the output file and remove duplicates.
+awk '{print $2}' fasta.balstn|sort|uniq > hit_accession_ids.txt
+
+#Retrieve the FASTA sequences using the IDs and create a FASTA file.
+$ temp_dir="temp_ids"
+$ mkdir -p $temp_dir
+$ ids=$(paste -sd, /hit_accession_ids.txt )
+$ split -l 100 hit_accession_ids_merged_16S_rRNA_sequences.fasta.blastn.uniq.txt temp_ids/ids_
+$ for file in $temp_dir/ids_*; do ids=$(paste -sd, $file); efetch -db nuccore -id "$ids" -format fasta >> output_file; sleep 1; done
+
+#Create a database using the output FASTA file.
+makeblastdb -in  output_file-dbtype nucl
