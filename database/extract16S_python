@@ -1,0 +1,37 @@
+from Bio import SeqIO
+ import os
+ def extract_16S_last(genbank_file, output_file):
+ try:
+ with open(genbank_file, "r") as input_handle, open(output_file, "w") as output_handle:
+ found = False
+ for record in SeqIO.parse(input_handle, "genbank"):
+ # print(record.features)
+ for feature in record.features:
+ #print( feature.qualifiers.get("product", []))
+ if feature.type == "rRNA" and ("16S ribosomal RNA" in feature.qualifiers.get("product", []) or \
+ "16S rRNA" in feature.qualifiers.get("gene", [])or \
+ "16S large subunit ribosomal RNA" in feature.qualifiers.get("product", []) or \
+ "16S ribosomal RNA"  in feature.qualifiers.get("note", []) or \
+ "contains 12S ribosomal RNA, tRNA-Val, and 16Sribosomal RNA" in feature.qualifiers.get("note", []) or \
+ "large subunit ribosomal RNA" in feature.qualifiers.get("product", []) or \
+ "l-rRNA" in feature.qualifiers.get("product", [])):
+ print(feature.location)
+ start = feature.location.start
+ end = feature.location.end
+ sequence = record.seq[start:end]
+ output_handle.write(f">{record.id}_16S_rRNA\n{sequence}\n")
+ found = True
+ if not found:
+ print(f"Warning: No 16S rRNA found in {genbank_file}")
+ except Exception as e:
+ print(f"Error processing {genbank_file}: {e}")
+ ids_file = '/home/omino.mio/2024seika/10.31/ids_complete_3.txt'
+ output_dir = "16S_rRNA_sequences_last"
+ os.makedirs(output_dir, exist_ok=True)
+ with open(ids_file, "r") as file:
+ ids = file.read().splitlines()
+ #print(ids)
+ for id in ids:
+ genbank_file = f"/home/omino.mio/2024seika/10.31/genbenk_files2/{id}.gb"
+ output_file = f"{output_dir}/{id}_16S_rRNA_last.fasta"
+ extract_16S_last(genbank_file, output_file)
