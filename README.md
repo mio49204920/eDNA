@@ -12,5 +12,5 @@ tar vxf merged_12.2_1.15.fa.tar.gz
 makeblastdb -in merged_12.2_1.15.fa.tar.gz -dbtype nucl
 
 git clone https://github.com/mio49204920/eDNA.git
-./eDNA/blast/shblast -t 16 <input_fastq>
+bash ./eDNA/blast/shblast -t 16 <input_fastq>
 ```
