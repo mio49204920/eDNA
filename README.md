@@ -9,7 +9,7 @@ Ensure that seqkit, blastn, blast2rma, and rma2info are included in the system's
 ```
 wget https://github.com/mio49204920/eDNA/releases/download/0.1/merged_12.2_1.15.fa.tar.gz
 tar vxf merged_12.2_1.15.fa.tar.gz
-makeblastdb -in merged_12.2_1.15.fa.tar.gz -dbtype nucl
+makeblastdb -in merged_12.2_1.15.fa -dbtype nucl
 
 git clone https://github.com/mio49204920/eDNA.git
 bash ./eDNA/blast/shblast -t 16 <input_fastq>
