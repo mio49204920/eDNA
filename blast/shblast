@@ -57,8 +57,7 @@ echo "FASTQ files: $@"
 # 各種パスの設定
 # 注：seqkit, blastn, blast2rma, rma2infoにはPATHを通しておくこと
 
-DB=silva-SSU-LSU_PR2_NCBI-16S-mito-plastid_2023-04-18_rename_mitofish-2023-11-07.fasta
-
+DB=merged_12.2_1.15.fa
 
 TEMP_DIR=$(mktemp -d)
 RESULT_FILE="${TEMP_DIR}/reslt.txt"
